@@ -179,3 +179,245 @@ type Pop<T extends any[]> = T extends [...infer U, any] ? U : never;
 
 type re1 = Pop<s_arr1>; // expected to be ['a', 'b', 'c']
 type re2 = Pop<s_arr2>; // expected to be [3, 2]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00004-easy-pick/README.md
+//
+///////////////////////////////////////////////////////////////
+
+interface Todo2 {
+  title: string;
+  description: string;
+  completed: boolean;
+}
+
+type MyPick2<T, U extends keyof T> = {
+  [key in U]: T[U];
+};
+
+type TodoPreview2 = MyPick2<Todo2, "title" | "completed">;
+
+const todo: TodoPreview2 = {
+  title: "Clean room",
+  completed: false,
+};
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00007-easy-readonly/README.md
+//
+///////////////////////////////////////////////////////////////
+
+interface Todo3 {
+  title: string;
+  description: string;
+}
+
+type MyReadonly3<T> = {
+  readonly [key in keyof T]: T[key];
+};
+
+const todo3: MyReadonly3<Todo3> = {
+  title: "Hey",
+  description: "foobar",
+};
+
+todo3.title = "Hello"; // Error: cannot reassign a readonly property
+todo3.description = "barFoo"; // Error: cannot reassign a readonly property
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00014-easy-first/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type arr12 = ["a", "b", "c"];
+type arr22 = [3, 2, 1];
+
+type First2<T extends any[]> = T extends [] ? never : T[0];
+
+type head1 = First2<arr12>; // expected to be 'a'
+type head2 = First2<arr22>; // expected to be 3
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00018-easy-tuple-length/README.md
+//
+///////////////////////////////////////////////////////////////
+type tesla = ["tesla", "model 3", "model X", "model Y"];
+type spaceX = ["FALCON 9", "FALCON HEAVY", "DRAGON", "STARSHIP", "HUMAN SPACEFLIGHT"];
+
+type Length<T extends readonly any[]> = T["length"];
+
+type teslaLength = Length<tesla>; // expected 4
+type spaceXLength = Length<spaceX>; // expected 5
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00043-easy-exclude/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type MyExclude3<T, U> = T extends U ? never : T;
+
+type Result3 = MyExclude3<"a" | "b" | "c", "a">; // 'b' | 'c'
+type Result4 = MyExclude3<"a" | "b" | "c", "b">; // 'a' | 'c'
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00189-easy-awaited/README.md
+//
+///////////////////////////////////////////////////////////////
+type MyAwaited<T> = T extends PromiseLike<infer U> ? MyAwaited<U> : T;
+
+type ExampleType = Promise<string>;
+
+type Result5 = MyAwaited<ExampleType>; // string
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00268-easy-if/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type If<C extends boolean, T, F> = C extends true ? T : F;
+
+type A = If<true, "a", "b">; // expected to be 'a'
+type B = If<false, "a", "b">; // expected to be 'b'
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00533-easy-concat/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Concat<T extends unknown[], U extends unknown[]> = [...T, ...U];
+
+type Result6 = Concat<[1], [2]>; // expected to be [1, 2]
+
+// let vAny: any = 10;          // We can assign anything to any
+// let vUnknown: unknown =  10; // We can assign anything to unknown just like any
+
+// let s1: string = vAny;     // Any is assignable to anything
+// let s2: string = vUnknown; // Invalid; we can't assign vUnknown to any other type (without an explicit assertion)
+
+// vAny.method();     // Ok; anything goes with any
+// vUnknown.method(); // Not ok; we don't know anything about this variable
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00898-easy-includes/README.md
+//
+///////////////////////////////////////////////////////////////
+
+// we can use T[number] to refer to the type of that index signature
+type Includes<T extends string[], U extends string> = {
+  // So { foo: 'bar'; }['foo'] will refer to type 'bar'
+  [P in T[number]]: true;
+}[U] extends true
+  ? true
+  : false;
+// extends true
+//   ? true
+//   : false;
+
+type isPillarMen = Includes<["Kars", "Esidisi", "Wamuu", "Santana"], "Dio">; // expected to be `false`
+type isPillarMen2 = Includes<["Kars", "Esidisi", "Wamuu", "Santana"], "Esidisi">; // expected to be `true`
+
+/*
+type isPillarMen = {
+  Kars: true;
+  Esidisi: true;
+  Wamuu: true;
+  Santana: true;
+};
+*/
+
+type Flatten<T> = T extends any[] ? T[number] : T;
+
+// Extracts out the element type
+
+type Str7 = Flatten<string[]>;
+
+type Str8 = string;
+
+// Leaves the type alone.
+type Num7 = Flatten<number>;
+
+type Num8 = number;
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03057-easy-push/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Push03057<T extends number[], U extends string> = [...T, U];
+
+type Result03057 = Push03057<[1, 2], "3">; // [1, 2, '3']
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03060-easy-unshift/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Unshift03060<T extends number[], U> = [U, ...T];
+
+type Result03060 = Unshift03060<[1, 2], 0>; // [0, 1, 2]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03060-easy-unshift/README.md
+//
+///////////////////////////////////////////////////////////////
+
+const foo = (arg1: string, arg2: number): void => {};
+
+type MyParameters<T extends (...args: any[]) => any> = T extends (...any_arg: infer S) => any ? S : any;
+
+type FunctionParamsType = MyParameters<typeof foo>; // [arg1: string, arg2: number]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00020-medium-promise-all/README.md
+//
+///////////////////////////////////////////////////////////////
+
+const promise1 = Promise.resolve(3);
+const promise2 = 42;
+const promise3 = new Promise<string>((resolve, reject) => {
+  setTimeout(resolve, 100, "foo");
+});
+
+declare function PromiseAll<T extends any[]>(
+  values: readonly [...T]
+  // ): Promise<{ [K in keyof T]: T[K]}>;
+): Promise<{ [K in keyof T]: T[K] extends Promise<infer R> ? R : T[K] }>;
+
+// expected to be `Promise<[number, 42, string]>`
+const p = PromiseAll([promise1, promise2, promise3] as const);
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00062-medium-type-lookup/README.md
+//
+///////////////////////////////////////////////////////////////
+
+interface Cat {
+  type: "cat";
+  breeds: "Abyssinian" | "Shorthair" | "Curl" | "Bengal";
+}
+
+interface Dog {
+  type: "dog";
+  breeds: "Hound" | "Brittany" | "Bulldog" | "Boxer";
+  color: "brown" | "white" | "black";
+}
+
+type LookUp<U, T extends string> = {
+  [K in T]: U extends { type: T } ? U : never;
+}[T];
+
+type MyDogType = LookUp<Cat | Dog, "dog">; // expected to be `Dog`
