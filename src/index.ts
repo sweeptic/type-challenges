@@ -500,34 +500,62 @@ type replaced2 = ReplaceAll<"t y p e s", " ", "">; // expected to be 'types'
 
 type Fn = (a: number, b: string) => number;
 
-type AppendArgument<Fn, A> = Fn extends (...args: infer R) => infer T  ? (...args: [R, A]) => T : Fn
+type AppendArgument<Fn, A> = Fn extends (...args: infer R) => infer T ? (...args: [R, A]) => T : Fn;
 
 type Result8 = AppendArgument<Fn, boolean>;
 // expected be (a: number, b: string, x: boolean) => number
 
 ///////////////////////////////////////////////////////////////
 //
-//
-//
-///////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////
-//
-//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00296-medium-permutation/README.md
 //
 ///////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////
-//
-//
-//
-///////////////////////////////////////////////////////////////
+type Permutation5<T, K = T> = [T] extends [never] ? [] : K extends K ? [K, ...Permutation5<Exclude<T, K>>] : never;
+
+type perm = Permutation5<"A" | "B" | "C">; // ['A', 'B', 'C'] | ['A', 'C', 'B'] | ['B', 'A', 'C'] | ['B', 'C', 'A'] | ['C', 'A', 'B'] | ['C', 'B', 'A']
 
 ///////////////////////////////////////////////////////////////
 //
-//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00298-medium-length-of-string/README.md
 //
 ///////////////////////////////////////////////////////////////
+
+// Compute the length of a string literal, which behaves like String#length.
+
+type LengthOfString<S extends string, T extends string[] = []> = S extends `${infer F}${infer R}`
+  ? LengthOfString<R, [...T, F]>
+  : T["length"];
+
+type StringLength = LengthOfString<"foobar">;
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00459-medium-flatten/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Flatten12<S extends any[], T extends any[] = []> = S extends [infer X, ...infer Y]
+  ? X extends any[]
+    ? Flatten12<[...X, ...Y], T>
+    : Flatten12<[...Y], [...T, X]>
+  : T;
+
+type flatten = Flatten12<[1, 2, [3, 4], [[[5]]]]>; // [1, 2, 3, 4, 5]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/00527-medium-append-to-object/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type AppendToObject6<T, U extends keyof any, V> = {
+  [K in keyof T | U]: K extends keyof T ? T[K] : V;
+};
+
+type Test6 = { id: "1" };
+type Result7 = AppendToObject6<Test6, "value", 4>; // expected to be { id: '1', value: 4 }
+
 ///////////////////////////////////////////////////////////////
 //
 //
