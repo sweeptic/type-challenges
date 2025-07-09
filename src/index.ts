@@ -598,3 +598,256 @@ type coo = {
 };
 
 type Result11 = Merge11<foo, coo>; // expected to be {name: string, age: number, sex: string}
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type KebabCase<S extends string> = S extends `${infer S1}${infer S2}` // F ooBarBaz
+  ? S2 extends Uncapitalize<S2>
+    ? `${Uncapitalize<S1>}${KebabCase<S2>}`
+    : `${Uncapitalize<S1>}-${KebabCase<S2>}`
+  : S;
+
+type FooBarBaz = KebabCase<"FooBarBaz">;
+const foobarbaz: FooBarBaz = "foo-bar-baz";
+
+type DoNothing = KebabCase<"do-nothing">;
+const doNothing: DoNothing = "do-nothing";
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type Diff<O, O1> = Omit<O & O1, keyof (O | O1)>;
+
+type Foo = {
+  name: string;
+  age: string;
+};
+type Bar = {
+  name: string;
+  age: string;
+  gender: number;
+};
+
+type result = Diff<Foo, Bar>; // "name" | "age"
+type result2 = keyof (Foo | Bar); // "name" | "age"
+type result3 = keyof (Foo & Bar); // "name" | "age" | "gender"
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type AnyOf<T extends any[]> = T[number] extends 0 | "" | false | [] | { [key: string]: never } ? false : true;
+
+type Sample1 = AnyOf<[1, "", false, [], {}]>; // expected to be true.
+type Sample2 = AnyOf<[0, "", false, [], {}]>; // expected to be false.
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type IsNever<T> = [T] extends [never] ? true : false;
+
+type A1 = IsNever<never>; // expected to be true
+type B1 = IsNever<undefined>; // expected to be false
+type C = IsNever<null>; // expected to be false
+type D = IsNever<[]>; // expected to be false
+type E = IsNever<number>; // expected to be false
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type case1 = IsUnion<string>; // false
+type case2 = IsUnion<string | number>; // true
+type case3 = IsUnion<[string | number]>; // false
+
+type IsUnionImpl<T, C extends T = T> = (T extends T ? (C extends T ? true : unknown) : never) extends true
+  ? false
+  : true;
+
+type IsUnion<T> = IsUnionImpl<T>;
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type NodeA = {
+  type: "A";
+  name: string;
+  flag: number;
+};
+
+type NodeB = {
+  type: "B";
+  id: number;
+  flag: number;
+};
+
+type NodeC = {
+  type: "C";
+  name: string;
+  flag: number;
+};
+
+type Nodes = NodeA | NodeB | NodeC;
+
+type ReplacedNodes = ReplaceKeys<Nodes, "name" | "flag", { name: number; flag: string }>; // {type: 'A', name: number, flag: string} | {type: 'B', id: number, flag: string} | {type: 'C', name: number, flag: string} // would replace name from string to number, replace flag from number to string.
+
+type ReplacedNotExistKeys = ReplaceKeys<Nodes, "name", { aa: number }>; // {type: 'A', name: never, flag: number} | NodeB | {type: 'C', name: never, flag: number} // would replace name to never
+
+type ReplaceKeys<U, T, Y> = { [K in keyof U]: K extends T ? (K extends keyof Y ? Y[K] : never) : U[K] };
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type Foo6 = {
+  [key: string]: any;
+  foo(): void;
+};
+
+type A6 = RemoveIndexSignature<Foo6>; // expected { foo(): void }
+
+// PropertyKey = string | number | symbol
+type RemoveIndexSignature<T, P = PropertyKey> = {
+  [K in keyof T as P extends K ? never : K extends P ? K : never]: T[K];
+};
+45;
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type PString1 = "";
+type PString2 = "+85%";
+type PString3 = "-85%";
+type PString4 = "85%";
+type PString5 = "85";
+
+type R1 = PercentageParser<PString1>; // expected ['', '', '']
+type R2 = PercentageParser<PString2>; // expected ["+", "85", "%"]
+type R3 = PercentageParser<PString3>; // expected ["-", "85", "%"]
+type R4 = PercentageParser<PString4>; // expected ["", "85", "%"]
+type R5 = PercentageParser<PString5>; // expected ["", "85", ""]
+
+type CheckPrefix<T> = T extends "+" | "-" ? T : never;
+
+type CheckSuffix<T> = T extends `${infer P}%` ? [P, "%"] : [T, ""];
+
+type PercentageParser<A extends string> = A extends `${CheckPrefix<infer L>}${infer R}`
+  ? [L, ...CheckSuffix<R>]
+  : ["", ...CheckSuffix<A>];
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type DropChar<S, C extends string> = S extends `${infer L}${C}${infer R}` ? DropChar<`${L}${R}`, C> : S;
+
+type Butterfly = DropChar<" b u t t e r f l y ! ", " ">; // 'butterfly!'
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type Pop6<T extends any[]> = T extends [...infer head, any] ? head : never;
+
+type MinusOne<T extends number, A extends any[] = []> = A["length"] extends T
+  ? Pop6<A>["length"]
+  : MinusOne<T, [...A, 0]>;
+
+type Zero = MinusOne<1>; // 0
+type FiftyFour = MinusOne<55>; // 54
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type PickByType<T, U> = {
+  [K in keyof T as T[K] extends U ? K : never]: U;
+};
+
+type OnlyBoolean = PickByType<
+  {
+    name: string;
+    count: number;
+    isReadonly: boolean;
+    isEnable: boolean;
+  },
+  boolean
+>; // { isReadonly: boolean; isEnable: boolean; }
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type StartsWith<T extends string, U extends string> = T extends `${U}${string}` ? true : false;
+
+type a = StartsWith<"abc", "ac">; // expected to be false
+type b = StartsWith<"abc", "ab">; // expected to be true
+type c = StartsWith<"abc", "abcd">; // expected to be false
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+type EndsWith<T extends string, U extends string> = T extends `${string}${U}` ? true : false;
+
+type a2 = EndsWith<"abc", "bc">; // expected to be true
+type b2 = EndsWith<"abc", "abc">; // expected to be true
+type c2 = EndsWith<"abc", "d">; // expected to be false
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
+interface User {
+  name: string;
+  age: number;
+  address: string;
+}
+
+type UserPartialName = PartialByKeys<User, "name">; // { name?:string; age:number; address:string }
+
+type IntersectionToObj<T> = {
+  [K in keyof T]: T[K];
+};
+// as any tells the compiler to consider the typed object as a plain untyped JavaScript object.
+type PartialByKeys<T, K = any> = IntersectionToObj<{
+  //
+  //  name?: string | undefined;
+  [P in keyof T as P extends K ? P : never]?: T[P];
+}> & {
+  [P in Exclude<keyof T, K>]: T[P];
+};
