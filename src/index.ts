@@ -851,3 +851,100 @@ type PartialByKeys<T, K = any> = IntersectionToObj<{
 }> & {
   [P in Exclude<keyof T, K>]: T[P];
 };
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/02759-medium-requiredbykeys/README.md
+//
+///////////////////////////////////////////////////////////////
+
+interface UserReq {
+  name?: string;
+  age?: number;
+  address?: string;
+}
+//  userReq, name                                 // age?, address?  & name: string;
+type RequiredByKeys<T, K extends keyof T = keyof T, O = Omit<T, K> & { [P in K]-?: T[P] }> = { [P in keyof O]: O[P] };
+
+type UserRequiredName = RequiredByKeys<UserReq, "name">; // { name: string; age?: number; address?: string }
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/02793-medium-mutable/README.md
+//
+///////////////////////////////////////////////////////////////
+
+interface TodoM {
+  readonly title: string;
+  readonly description: string;
+  readonly completed: boolean;
+}
+
+type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+
+type MutableTodo = Mutable<TodoM>; // { title: string; description: string; completed: boolean; }
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/02852-medium-omitbytype/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type OmitByType<T, U> = {
+  [P in keyof T as T[P] extends U ? never : P]: T[P];
+};
+
+type OmitBoolean = OmitByType<
+  {
+    name: string;
+    count: number;
+    isReadonly: boolean;
+    isEnable: boolean;
+  },
+  boolean
+>; // { name: string; count: number }
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/02946-medium-objectentries/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type ObjectEntries<T> = {
+  [K in keyof T]-?: [K, T[K]];
+}[keyof T];
+
+interface Model {
+  name: string;
+  age: number;
+  locations: string[] | null;
+}
+
+type modelEntries = ObjectEntries<Model>; // ['name', string] | ['age', number] | ['locations', string[] | null];
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03062-medium-shift/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Shift<T extends any[]> = T extends [any, ...infer U] ? U : never;
+
+type ResultShift = Shift<[3, 2, 1]>; // [2, 1]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03188-medium-tuple-to-nested-object/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type TupleToNestedObject<T, U> = T extends [infer F, ...infer R]
+  ? {
+      [K in F & string]: TupleToNestedObject<R, U>;
+    }
+  : U;
+
+type aT = TupleToNestedObject<["a"], string>; // {a: string}
+type bT = TupleToNestedObject<["a", "b"], number>; // {a: {b: number}}
+type cT = TupleToNestedObject<[], boolean>; // boolean. if the tuple is empty, just return the U type
+type xT = TupleToNestedObject<["a", "b", "c"], number>; // {a: {b: number}}
