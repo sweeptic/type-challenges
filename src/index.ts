@@ -948,3 +948,103 @@ type aT = TupleToNestedObject<["a"], string>; // {a: string}
 type bT = TupleToNestedObject<["a", "b"], number>; // {a: {b: number}}
 type cT = TupleToNestedObject<[], boolean>; // boolean. if the tuple is empty, just return the U type
 type xT = TupleToNestedObject<["a", "b", "c"], number>; // {a: {b: number}}
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03192-medium-reverse/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Reverse<T extends any[]> = T extends [infer F, ...infer Rest] ? [...Reverse<Rest>, F] : T;
+
+type aR = Reverse<["a", "b"]>; // ['b', 'a']
+type bR = Reverse<["a", "b", "c"]>; // ['c', 'b', 'a']
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03196-medium-flip-arguments/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Reverse4<T extends unknown[]> = T extends [infer F, ...infer R] ? [...Reverse4<R>, F] : [];
+
+type FlipArguments<T extends (...args: any[]) => any> = T extends (...args: infer P) => infer U
+  ? (...args: Reverse4<P>) => U
+  : never;
+
+type Flipped96 = FlipArguments<(arg0: string, arg1: number, arg2: boolean) => void>;
+// (arg0: boolean, arg1: number, arg2: string) => void
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03243-medium-flattendepth/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type FlattenDepth<T extends any[], S extends number = 1, U extends any[] = []> = U["length"] extends S
+  ? T
+  : T extends [infer F, ...infer R]
+  ? F extends any[]
+    ? [...FlattenDepth<F, S, [...U, 1]>, ...FlattenDepth<R, S, U>]
+    : [F, ...FlattenDepth<R, S, U>]
+  : T;
+
+type af = FlattenDepth<[1, 2, [3, 4], [[[5]]]], 2>; // [1, 2, 3, 4, [5]]. flattern 2 times
+type bf = FlattenDepth<[1, 2, [3, 4], [[[5]]]]>; // [1, 2, 3, 4, [[5]]]. Depth defaults to be 1
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03243-medium-flattendepth/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type BEM<B extends string, E extends string[], M extends string[]> = `${B}${E extends []
+  ? ""
+  : `__${E[number]}`}${M extends [] ? "" : `--${M[number]}`}`;
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/03376-medium-inordertraversal/README.md
+//
+///////////////////////////////////////////////////////////////
+
+interface TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+}
+
+type InorderTraversal<T extends TreeNode | null, NT extends TreeNode = NonNullable<T>> = T extends null
+  ? []
+  : [...InorderTraversal<NT["left"]>, NT["val"], ...InorderTraversal<NT["right"]>];
+
+const tree1 = {
+  val: 1,
+  left: null,
+  right: {
+    val: 2,
+    left: {
+      val: 3,
+      left: null,
+      right: null,
+    },
+    right: null,
+  },
+} as const;
+
+type A5 = InorderTraversal<typeof tree1>; // [1, 3, 2]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04179-medium-flip/README.md
+//
+///////////////////////////////////////////////////////////////
+
+// 答案
+type Flip<T extends Record<string, string | number | boolean>> = {
+  [P in keyof T as `${T[P]}`]: P;
+};
+
+type f6 = Flip<{ a: "x"; b: "y"; c: "z" }>; // {x: 'a', y: 'b', z: 'c'}
+type f7 = Flip<{ a: 1; b: 2; c: 3 }>; // {1: 'a', 2: 'b', 3: 'c'}
+type f8 = Flip<{ a: false; b: true }>; // {false: 'a', true: 'b'}
