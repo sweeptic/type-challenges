@@ -1048,3 +1048,244 @@ type Flip<T extends Record<string, string | number | boolean>> = {
 type f6 = Flip<{ a: "x"; b: "y"; c: "z" }>; // {x: 'a', y: 'b', z: 'c'}
 type f7 = Flip<{ a: 1; b: 2; c: 3 }>; // {1: 'a', 2: 'b', 3: 'c'}
 type f8 = Flip<{ a: false; b: true }>; // {false: 'a', true: 'b'}
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04182-medium-fibonacci-sequence/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Fibonacci<
+  T extends number,
+  CurrentIndex extends any[] = [1],
+  Prev extends any[] = [],
+  Current extends any[] = [1]
+> = CurrentIndex["length"] extends T
+  ? Current["length"]
+  : Fibonacci<T, [...CurrentIndex, 1], Current, [...Prev, ...Current]>;
+
+type Result1 = Fibonacci<3>; // 2
+type Result2 = Fibonacci<8>; // 21
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04260-medium-nomiwase/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type String2Union<S extends string> = S extends `${infer C}${infer REST}` ? C | String2Union<REST> : never;
+
+type AllCombinations<STR extends string, S extends string = String2Union<STR>> = [S] extends [never]
+  ? ""
+  : "" | { [K in S]: `${K}${AllCombinations<never, Exclude<S, K>>}` }[S];
+
+type AllCombinations_ABC = AllCombinations<"ABC">;
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04425-medium-greater-than/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type ArrayWithLength<T extends number, U extends any[] = []> = U["length"] extends T
+  ? U
+  : ArrayWithLength<T, [true, ...U]>;
+
+type GreaterThan<T extends number, U extends number> = ArrayWithLength<U> extends [...ArrayWithLength<T>, ...infer _]
+  ? false
+  : true;
+
+type g1 = GreaterThan<2, 1>; //should be true
+type g2 = GreaterThan<1, 1>; //should be false
+type g3 = GreaterThan<10, 100>; //should be false
+type g4 = GreaterThan<111, 11>; //should be true
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04471-medium-zip/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Zip<A extends any[], B extends any[], L extends any[] = []> = L["length"] extends A["length"] | B["length"]
+  ? L
+  : Zip<A, B, [...L, [A[L["length"]], B[L["length"]]]]>;
+
+type exp = Zip<[1, 2], [true, false]>; // expected to be [[1, true], [2, false]]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04484-medium-istuple/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type IsTuple<T> = T extends readonly any[] ? (number extends T["length"] ? false : true) : false;
+
+type case11 = IsTuple<[number]>; // true
+type case21 = IsTuple<readonly [number]>; // true
+type case31 = IsTuple<number[]>; // false
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04499-medium-chunk/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Chunk<T extends any[], N extends number, Swap extends any[] = []> = Swap["length"] extends N
+  ? [Swap, ...Chunk<T, N>]
+  : T extends [infer K, ...infer L]
+  ? Chunk<L, N, [...Swap, K]>
+  : Swap extends []
+  ? Swap
+  : [Swap];
+
+type exp1 = Chunk<[1, 2, 3], 2>; // expected to be [[1, 2], [3]]
+type exp2 = Chunk<[1, 2, 3], 4>; // expected to be [[1, 2, 3]]
+type exp3 = Chunk<[1, 2, 3], 1>; // expected to be [[1], [2], [3]]
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04518-medium-fill/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Fill<
+  T extends unknown[],
+  N,
+  Start extends number = 0,
+  End extends number = T["length"],
+  Count extends any[] = [],
+  Flag extends boolean = Count["length"] extends Start ? true : false
+> = Count["length"] extends End
+  ? T
+  : T extends [infer R, ...infer U]
+  ? Flag extends false
+    ? [R, ...Fill<U, N, Start, End, [...Count, 0]>]
+    : [N, ...Fill<U, N, Start, End, [...Count, 0], Flag>]
+  : T;
+
+type expf1 = Fill<[1, 2, 3], 54>; // expected to be [0, 0, 0]
+
+interface AnimalCanWalk {
+  walk(): void;
+}
+
+interface AnimalCanFly {
+  fly(): void;
+}
+
+interface a22 extends AnimalCanFly, AnimalCanWalk {}
+
+class a_1 {}
+class a_2 {}
+class a_3 {}
+
+class derived extends a_1 {}
+
+class multiple_derived extends derived {}
+
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/04803-medium-trim-right/README.md
+//
+///////////////////////////////////////////////////////////////
+// 
+type TrimRight<S extends string> = S extends `${infer Left}${" " | "\n" | "\t"}` ? TrimRight<Left> : S;
+
+type Trimmed = TrimRight<'   Hello World    '> // expected to be '   Hello World'
+
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/05117-medium-without/README.md
+//
+///////////////////////////////////////////////////////////////
+
+type Without<T, U> = T extends [infer R, ...infer F] ? (R extends U ? Without<F, U> : [R, ...Without<F, U>]) : T;
+
+type Res = Without<[1, 2], 1>; // expected to be [2]
+type Res1 = Without<[1, 2, 4, 1, 5], [1, 2]>; // expected to be [4, 5]
+type Res2 = Without<[2, 3, 2, 3, 2, 3, 2, 3], [2, 3]>; // expected to be []
+
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/05140-medium-trunc/README.md
+//
+///////////////////////////////////////////////////////////////
+
+
+type Trunc<T extends number | string> = `${T}` extends `${infer N}.${any}` ? N : `${T}`;
+
+type A58 = Trunc<12.34> // 12
+
+
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/05153-medium-indexof/README.md
+//
+///////////////////////////////////////////////////////////////
+
+
+
+type Res = IndexOf<[1, 2, 3], 2>; // expected to be 1
+type Res1 = IndexOf<[2,6, 3,8,4,1,7, 3,9], 3>; // expected to be 2
+type Res2 = IndexOf<[0, 0, 0], 2>; // expected to be -1
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/05310-medium-join/README.md
+//
+///////////////////////////////////////////////////////////////
+
+
+
+type Join<T extends any[], U extends string | number> = T extends [infer F, ...infer R]
+  ? R["length"] extends 0
+    ? `${F & string}`
+    : `${F & string}${U}${Join<R, U>}`
+  : never;
+
+
+type Res67 = Join<["a", "p", "p", "l", "e"], "-">; // expected to be 'a-p-p-l-e'
+type Res167 = Join<["Hello", "World"], " ">; // expected to be 'Hello World'
+type Res267 = Join<["2", "2", "2"], 1>; // expected to be '21212'
+type Res367 = Join<["o"], "u">; // expected to be 'o'
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/05317-medium-lastindexof/README.md
+//
+///////////////////////////////////////////////////////////////
+
+
+type LastIndexOf<T extends any[], U> = T extends [...infer I, infer L]
+  ? L extends U
+    ? I["length"]
+    : LastIndexOf<I, U>
+  : -1;
+
+type Res189 = LastIndexOf<[1, 2, 3, 2, 1], 2> // 3
+type Res289 = LastIndexOf<[0, 0, 0], 2> // -1
+
+///////////////////////////////////////////////////////////////
+//
+//https://github.com/type-challenges/type-challenges/blob/main/questions/05360-medium-unique/README.md
+//
+///////////////////////////////////////////////////////////////
+
+
+
+type Res34 = Unique<[1, 1, 2, 2, 3, 3]>; // expected to be [1, 2, 3]
+type Res134 = Unique<[1, 2, 3, 4, 4, 5, 6, 7]>; // expected to be [1, 2, 3, 4, 5, 6, 7]
+type Res234 = Unique<[1, "a", 2, "b", 2, "a"]>; // expected to be [1, "a", 2, "b"]
+type Res334 = Unique<[string, number, 1, "a", 1, string, 2, "b", 2, number]>; // expected to be [string, number, 1, "a", 2, "b"]
+type Res434 = Unique<[unknown, unknown, any, any, never, never]>; // expected to be [unknown, any, never]
+
+///////////////////////////////////////////////////////////////
+//
+//
+//
+///////////////////////////////////////////////////////////////
+
